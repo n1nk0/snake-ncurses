@@ -19,14 +19,6 @@ Snake *snake;
 pthread_t update_thread_id;
 
 void
-end ()
-{
-  quit_update = 1;
-  pthread_join (update_thread_id, NULL);
-  endwin ();
-}
-
-void
 snake_add (int x, int y)
 {
   Snake *new_node = (Snake *) malloc (sizeof (Snake));
@@ -201,37 +193,21 @@ loop ()
       c = getch();
       if (c == 'q') return;
 
-      if (ended && c == 'r')
-        {
-          ended = 0;
-          score = 0;
-        }
+      if (ended && c == 'r') ended = score = 0;
 
-      if (c == 'i' && last_vel.y != 1)
-        {
-          vel.y = -1;
-          vel.x = 0;
-        }
-      else if (c == 'k' && last_vel.y != -1)
-        {
-          vel.y = 1;
-          vel.x = 0;
-        }
-      else if (c == 'j' && last_vel.x != 2)
-        {
-          vel.y = 0;
-          vel.x = -2;
-        }
-      else if (c == 'l' && last_vel.x != -2)
-        {
-          vel.y = 0;
-          vel.x = 2;
-        }
+      vel.y = vel.x = 0;
+
+      if (c == 'i' && last_vel.y !=  1) vel.y = -1;
+      if (c == 'k' && last_vel.y != -1) vel.y =  1;
+      if (c == 'j' && last_vel.x !=  2) vel.x = -2;
+      if (c == 'l' && last_vel.x != -2) vel.x =  2;
+
+      if (!vel.y && !vel.x) vel = last_vel;
     }
 }
 
 void
-init ()
+start ()
 {
   initscr ();
   getmaxyx (stdscr, rows, cols);
@@ -241,10 +217,18 @@ init ()
   srand (time (NULL));
 }
 
+void
+end ()
+{
+  quit_update = 1;
+  pthread_join (update_thread_id, NULL);
+  endwin ();
+}
+
 int
 main ()
 {
-  init ();
+  start ();
   loop ();
   end ();
   return 0;
